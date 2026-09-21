@@ -1,0 +1,20 @@
+{
+  "name": "magnific",
+  "description": "Unofficial, community-built Claude Code plugin that connects Magnific's remote MCP server: upscale, generate images and video, reuse character/style references, and browse your creation history. Not affiliated with or endorsed by Magnific.",
+  "version": "0.1.0",
+  "author": {
+    "name": "arananet",
+    "url": "https://github.com/arananet/magnific_claude_code_plugin"
+  },
+  "homepage": "https://github.com/arananet/magnific_claude_code_plugin",
+  "repository": "https://github.com/arananet/magnific_claude_code_plugin",
+  "license": "MIT",
+  "keywords": [
+    "magnific",
+    "mcp",
+    "upscale",
+    "image-generation",
+    "video-generation",
+    "content-creation"
+  ]
+}

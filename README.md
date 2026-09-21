@@ -1,54 +1,78 @@
-# {{PROJECT_NAME}}
+# magnific_claude_code_plugin
 
-{{BADGES}}
+![Claude Code](https://img.shields.io/badge/Claude%20Code-plugin-8A4FFF) ![MCP](https://img.shields.io/badge/MCP-streamable%20HTTP-informational) ![OpenSpec](https://img.shields.io/badge/OpenSpec-enforced-blueviolet) ![License](https://img.shields.io/badge/License-MIT-green)
 
-> {{PROJECT_DESCRIPTION}}
+> A Claude Code plugin that brings Magnific's creative AI — upscaling, image and
+> video generation, character/style references, and your creation history — into
+> a normal Claude Code session.
+
+**Unofficial.** This is a community-built integration by a fan of the platform,
+not affiliated with or endorsed by Magnific. It talks to Magnific's public MCP
+endpoint using your own account and credits.
 
 ---
 
-## Start With This Template
+## Install
 
-For a new project, use **Use this template** on GitHub, then clone your new
-repository. Install Bash, Git, and Ruby >= 2.6; no AI runtime is required.
-
-1. Follow [project onboarding](docs/ONBOARDING.md) to confirm project values,
-   configure the test command, and remove template-only specs in your new copy.
-   Work manually or with your coding agent; do not run cleanup on this template.
-2. Run `bash setup.sh`, then `bash scripts/openspec scaffold "first-change"`.
-   Agree on scope, acceptance criteria, and tests before setting `status: review`.
-3. Implement one small change with its tests. Run `bash scripts/openspec check`,
-   `bash scripts/openspec verify first-change`, and `bash scripts/openspec status first-change`.
-4. Submit the spec, implementation, tests, and relevant docs together for human
-   review. A passing command is evidence, not approval to merge.
-
-That is the core loop. [Optional capabilities](docs/ADOPTION.md#compose-by-need)
-can follow when needed; this path does not disable shipped security workflows.
-Maintaining the template itself? Use the [local verification guide](docs/ADOPTION.md#template-verification)
-and preserve all placeholders. Replace this section with project-specific guidance
-after onboarding.
-
-## Quick start
+As a plugin (gets the commands and the skill too):
 
 ```bash
-# 1. Clone and install
-git clone https://github.com/{{GITHUB_OWNER}}/{{PROJECT_NAME}}.git
-cd {{PROJECT_NAME}}
-bash setup.sh
-
-# 2. Run
-{{TEST_COMMAND}}
+/plugin install arananet/magnific_claude_code_plugin
 ```
 
-<!--
-Replace this section with how to actually install and run YOUR project:
-language version, dependencies, env vars, run command, etc.
--->
+Or register just the MCP server:
+
+```bash
+claude mcp add --transport http magnific https://mcp.magnific.com
+```
+
+## Authentication
+
+**OAuth, not an API key.** The first Magnific tool call opens a Magnific sign-in
+in your browser; approve it and Claude Code keeps the session. There is nothing
+to paste and no key to store — do not add credentials to `.mcp.json`.
+(Magnific's REST API does use API keys; that is a separate surface this plugin
+does not touch.)
+
+Generations spend credits from your Magnific balance, scaled by model and
+resolution.
+
+## What you get
+
+| Command | Does |
+| --- | --- |
+| `/magnific:setup` | Connect the server and explain the OAuth sign-in |
+| `/magnific:upscale` | Upscale an asset, faithful or generative, sized to the deliverable |
+| `/magnific:generate` | Generate an image or video, with reference-based consistency |
+| `/magnific:creations` | Search your history and reuse a past asset |
+
+Plus the `magnific-creator-workflows` skill, which fires on natural requests
+("make this print-ready", "same character, different scene", "the one I made last
+week") and picks the right Magnific tool, guards credit spend, and keeps a set of
+assets visually consistent.
+
+The underlying MCP server exposes tools for upscaling, image and video generation,
+background removal, custom references, creation search, text-to-speech, and 3D
+generation. The skill reads the server's live tool list rather than hardcoding
+names, so it keeps working if Magnific adds or renames tools.
+
+## Develop
+
+```bash
+bash setup.sh          # install git hooks
+bash tests/plugin.sh   # plugin contract tests (no network, no account needed)
+bash scripts/openspec check
+```
 
 ---
 
 ## Usage
 
-<!-- TODO: Show the smallest useful example of your project in action. -->
+Once installed, just ask:
+
+- "Upscale `hero.png` for a print poster" → picks the faithful path, sizes to print
+- "Generate a thumbnail with this character" → builds or reuses a reference
+- "Find the product shot I made last week and cut out the background"
 
 ---
 

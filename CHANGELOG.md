@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to `{{PROJECT_NAME}}` will be documented in this file.
+All notable changes to `magnific_claude_code_plugin` will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
@@ -20,6 +20,22 @@ Guidelines:
 -->
 
 ## [Unreleased]
+
+### Added
+
+- Magnific Claude Code plugin: `magnific` MCP server (streamable HTTP, browser
+  OAuth), `/magnific:setup`, `/magnific:upscale`, `/magnific:generate`,
+  `/magnific:creations`, and the `magnific-creator-workflows` skill
+  (spec: magnific-mcp-plugin).
+- `tests/plugin.sh` contract tests covering manifest fields, MCP transport and
+  url, absence of credentials in config, and command/skill frontmatter
+  (spec: magnific-mcp-plugin).
+
+### Changed
+
+- Onboarded the OpenSpec template into this project: filled config values,
+  removed template-internal specs and the template marker, and rewrote the
+  README around the plugin (spec: magnific-mcp-plugin).
 
 ### Added
 
@@ -71,4 +87,4 @@ Commits: `0a92a2d`, `035a861`, `5adbfbe`.
 
 - Initial repository commit (`d07225a`). No tagged release date is recorded in the local Git history.
 
-[Unreleased]: https://github.com/{{GITHUB_OWNER}}/{{PROJECT_NAME}}/commits/HEAD
+[Unreleased]: https://github.com/arananet/magnific_claude_code_plugin/commits/HEAD

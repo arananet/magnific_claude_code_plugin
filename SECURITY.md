@@ -2,7 +2,7 @@
 
 ## Supported Versions
 
-Security fixes are applied to the latest release line of `{{PROJECT_NAME}}`.
+Security fixes are applied to the latest release line of `magnific_claude_code_plugin`.
 Older releases receive fixes only when explicitly flagged in the
 [CHANGELOG](CHANGELOG.md).
 

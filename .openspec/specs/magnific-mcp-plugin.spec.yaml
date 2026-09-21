@@ -1,0 +1,69 @@
+title: "Magnific MCP plugin for Claude Code"
+slug: "magnific-mcp-plugin"
+type: feature
+status: review
+
+author: "arananet"
+created_at: "2026-09-21"
+updated_at: "2026-09-21"
+
+roles:
+  implementer: "@arananet"
+  reviewer: "@arananet"
+  qa: "@arananet"
+  product_owner: "@arananet"
+
+description: |
+  Package the Magnific remote MCP server as an installable Claude Code plugin so
+  content creators get Magnific's upscaling, image/video generation, character
+  references, and creation history inside a normal Claude Code session. The
+  plugin registers the streamable-HTTP endpoint https://mcp.magnific.com, whose
+  authentication is browser OAuth handled by Claude Code — no API key is stored
+  in the repository or in the user's environment. On top of the raw MCP tools it
+  ships a creator-facing skill that teaches Claude which tool to reach for, and
+  slash commands for the workflows creators repeat most: upscaling a delivery
+  asset, generating a concept, and reusing past creations.
+
+acceptance_criteria:
+  - "Given a user runs /plugin install on this repository, when Claude Code loads the plugin, then a `magnific` MCP server is registered with transport `http` and url `https://mcp.magnific.com`."
+  - "Given the plugin is installed, when the user first invokes a Magnific tool, then authentication happens through the browser OAuth flow and no API key or token is read from the repo or environment."
+  - "Given the plugin is installed, when the user types a slash command, then /magnific:upscale, /magnific:generate, /magnific:creations, and /magnific:setup are available."
+  - "Given a creator asks for upscaling, generation, or past assets in natural language, when Claude loads the magnific-creator-workflows skill, then it selects the matching Magnific tool and states the credit cost implication before running a paid generation."
+  - "Given Magnific renames or adds a tool, when the user runs the plugin, then commands and skill still work because they describe intent and defer exact tool selection to the server's advertised tool list rather than hardcoding a required tool set."
+  - "Given a contributor changes plugin files, when `bash tests/plugin.sh` runs, then it fails on invalid JSON, a missing required manifest field, a wrong MCP transport or url, or a command/skill file missing YAML frontmatter."
+
+test_plan:
+  - "Unit test (tests/plugin.sh): every JSON file under .claude-plugin/ parses and plugin.json carries name, description, version, author."
+  - "Unit test (tests/plugin.sh): .mcp.json defines the magnific server with type http and url https://mcp.magnific.com."
+  - "Unit test (tests/plugin.sh): no API-key-shaped secret or token env var is referenced by the MCP config, guarding the OAuth-only contract."
+  - "Unit test (tests/plugin.sh): each file in commands/ and skills/ opens with a YAML frontmatter block containing a description."
+  - "Integration (manual, qa_notes): install the plugin in a real Claude Code session and confirm the OAuth browser flow and one tool call."
+
+qa_notes: |
+  The MCP endpoint could not be reached from the build environment (egress proxy
+  returns 403 for magnific.com and mcp.magnific.com), so the tool list used in
+  the skill comes from Magnific's public documentation rather than a live
+  tools/list handshake. Manual QA must confirm the advertised tool names in a
+  real session and correct skills/magnific-creator-workflows/SKILL.md if any
+  differ. Paid generations consume Magnific credits — use the smallest
+  resolution when smoke-testing.
+
+out_of_scope:
+  - "Wrapping the Magnific REST API or handling API keys; the MCP endpoint is OAuth-only."
+  - "Proxying, caching, or re-hosting Magnific assets."
+  - "Publishing the plugin to a marketplace."
+
+implementation_skill: null
+
+eval_plan:
+  scenarios: []
+  metrics: []
+
+technical_notes: |
+  Claude Code plugin layout: .claude-plugin/plugin.json manifest, .mcp.json for
+  the server, commands/*.md for slash commands, skills/<name>/SKILL.md for the
+  skill. Equivalent one-line install without the plugin:
+  `claude mcp add --transport http magnific https://mcp.magnific.com`.
+
+linked_issues: []
+linked_prs: []
