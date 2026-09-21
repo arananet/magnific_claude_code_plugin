@@ -24,11 +24,21 @@ Guidelines:
 ### Added
 
 - Magnific Claude Code plugin: `magnific` MCP server (streamable HTTP, browser
-  OAuth), `/magnific:setup`, `/magnific:upscale`, `/magnific:generate`,
-  `/magnific:creations`, and the `magnific-creator-workflows` skill
+  OAuth) plus eight slash commands — `setup`, `upscale`, `generate`, `batch`,
+  `brief`, `library`, `budget`, `creations` — and the
+  `magnific-creator-workflows` skill (spec: magnific-mcp-plugin).
+- PreToolUse spend guard: asks for confirmation once the daily paid-call budget
+  is reached, never guards read-only tools, and treats an unrecognized Magnific
+  tool as paid (spec: magnific-mcp-plugin).
+- PostToolUse asset capture: downloads returned assets to `.magnific/assets/`
+  and records tool, prompt, settings and paths in `.magnific/ledger.jsonl`,
+  searchable offline via `scripts/magnific/report.py` (spec: magnific-mcp-plugin).
+- `magnific-art-director` subagent for multi-asset productions
   (spec: magnific-mcp-plugin).
-- `tests/plugin.sh` contract tests covering manifest fields, MCP transport and
-  url, absence of credentials in config, and command/skill frontmatter
+- Tests: `tests/plugin.sh` contract checks (manifest, transport and url, no
+  credentials in config, hook wiring, frontmatter) and
+  `tests/magnific_hooks_test.py` unit tests for tool classification, URL
+  extraction, guard decisions, ledger writes and malformed-input handling
   (spec: magnific-mcp-plugin).
 
 ### Changed

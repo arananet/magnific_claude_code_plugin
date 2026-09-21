@@ -184,3 +184,6 @@ terraform.rc
 # ─── OpenSpec local state ──────────────────────────────────────────────────
 .openspec/.cache/
 .openspec/local.yaml
+
+# Magnific plugin: downloaded assets are large; the ledger stays.
+.magnific/assets/

@@ -1,6 +1,6 @@
 {
   "name": "magnific",
-  "description": "Unofficial, community-built Claude Code plugin that connects Magnific's remote MCP server: upscale, generate images and video, reuse character/style references, and browse your creation history. Not affiliated with or endorsed by Magnific.",
+  "description": "Unofficial Claude Code plugin for Magnific: connects the remote MCP server and adds local tooling around it \u2014 a credit-spend guard, an asset ledger that downloads and records every result, batch and brief workflows, and an art-director subagent. Not affiliated with or endorsed by Magnific.",
   "version": "0.1.0",
   "author": {
     "name": "arananet",
@@ -16,5 +16,9 @@
     "image-generation",
     "video-generation",
     "content-creation"
-  ]
+  ],
+  "hooks": "./plugin-hooks/hooks.json",
+  "commands": "./commands",
+  "agents": "./agents",
+  "skills": "./skills"
 }

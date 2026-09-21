@@ -27,16 +27,27 @@ description: |
 acceptance_criteria:
   - "Given a user runs /plugin install on this repository, when Claude Code loads the plugin, then a `magnific` MCP server is registered with transport `http` and url `https://mcp.magnific.com`."
   - "Given the plugin is installed, when the user first invokes a Magnific tool, then authentication happens through the browser OAuth flow and no API key or token is read from the repo or environment."
-  - "Given the plugin is installed, when the user types a slash command, then /magnific:upscale, /magnific:generate, /magnific:creations, and /magnific:setup are available."
+  - "Given the plugin is installed, when the user types a slash command, then /magnific:setup, :upscale, :generate, :creations, :library, :budget, :batch and :brief are available."
+  - "Given a Magnific tool returns hosted asset URLs, when the PostToolUse hook runs, then each asset is downloaded under .magnific/assets/ and an entry recording tool, prompt, settings and paths is appended to .magnific/ledger.jsonl."
+  - "Given the configured daily paid-call budget has been reached, when another paid Magnific tool is about to run, then the PreToolUse hook returns permissionDecision 'ask' with the count and the budget; read-only tools are never guarded."
+  - "Given a Magnific tool name the plugin does not recognize, when the guard classifies it, then it is treated as paid, so a newly added generation tool is guarded rather than spending silently."
+  - "Given either hook receives malformed input or hits an error, when it runs, then it exits 0 with valid JSON and the user's tool call is unaffected."
+  - "Given a creator asks for a multi-asset set, when work is delegated to the magnific-art-director subagent, then it checks budget and existing work first, anchors the set to one custom reference, and generates one asset at a time."
   - "Given a creator asks for upscaling, generation, or past assets in natural language, when Claude loads the magnific-creator-workflows skill, then it selects the matching Magnific tool and states the credit cost implication before running a paid generation."
   - "Given Magnific renames or adds a tool, when the user runs the plugin, then commands and skill still work because they describe intent and defer exact tool selection to the server's advertised tool list rather than hardcoding a required tool set."
-  - "Given a contributor changes plugin files, when `bash tests/plugin.sh` runs, then it fails on invalid JSON, a missing required manifest field, a wrong MCP transport or url, or a command/skill file missing YAML frontmatter."
+  - "Given a contributor changes plugin files, when `bash tests/plugin.sh` runs, then it fails on invalid JSON, a missing required manifest field, a wrong MCP transport or url, a hook matcher not scoped to magnific tools, a hook that exits non-zero on bad input, or a command/skill/agent file missing YAML frontmatter."
 
 test_plan:
   - "Unit test (tests/plugin.sh): every JSON file under .claude-plugin/ parses and plugin.json carries name, description, version, author."
   - "Unit test (tests/plugin.sh): .mcp.json defines the magnific server with type http and url https://mcp.magnific.com."
   - "Unit test (tests/plugin.sh): no API-key-shaped secret or token env var is referenced by the MCP config, guarding the OAuth-only contract."
-  - "Unit test (tests/plugin.sh): each file in commands/ and skills/ opens with a YAML frontmatter block containing a description."
+  - "Unit test (tests/plugin.sh): each file in commands/, skills/ and agents/ opens with a YAML frontmatter block containing a description."
+  - "Unit test (tests/plugin.sh): hooks.json wires PreToolUse and PostToolUse with matchers scoped to magnific tools, the manifest points at plugin-hooks/hooks.json, and both hook scripts exit 0 on malformed stdin."
+  - "Unit test (tests/magnific_hooks_test.py): paid/free tool classification, including fail-closed handling of an unknown tool."
+  - "Unit test (tests/magnific_hooks_test.py): asset-URL extraction finds media links, ignores page links, and deduplicates."
+  - "Unit test (tests/magnific_hooks_test.py): guard decisions under, at, and over budget, with calls older than 24h falling out of the window and read-only tools never guarded."
+  - "Unit test (tests/magnific_hooks_test.py): capture writes a ledger entry with only known input fields, records the entry even when the download fails, and ignores non-Magnific tools."
+  - "Unit test (tests/magnific_hooks_test.py): a corrupt ledger line is skipped rather than fatal."
   - "Integration (manual, qa_notes): install the plugin in a real Claude Code session and confirm the OAuth browser flow and one tool call."
 
 qa_notes: |
@@ -50,6 +61,7 @@ qa_notes: |
 
 out_of_scope:
   - "Wrapping the Magnific REST API or handling API keys; the MCP endpoint is OAuth-only."
+  - "Reading the user's real Magnific credit balance. The guard rate-limits paid tool calls locally; it cannot see the account."
   - "Proxying, caching, or re-hosting Magnific assets."
   - "Publishing the plugin to a marketplace."
 
@@ -60,9 +72,13 @@ eval_plan:
   metrics: []
 
 technical_notes: |
-  Claude Code plugin layout: .claude-plugin/plugin.json manifest, .mcp.json for
-  the server, commands/*.md for slash commands, skills/<name>/SKILL.md for the
-  skill. Equivalent one-line install without the plugin:
+  Layout: .claude-plugin/plugin.json manifest, .mcp.json for the server,
+  commands/*.md, skills/<name>/SKILL.md, agents/*.md, and plugin-hooks/hooks.json.
+  Hook config lives in plugin-hooks/ rather than hooks/ because the repo root's
+  hooks/ already holds OpenSpec's git hooks; the manifest points at it explicitly.
+  Hook scripts are standard-library Python 3 under scripts/magnific/ and write
+  state to .magnific/ in the project being worked on (CLAUDE_PROJECT_DIR).
+  Registering only the server, without any of this, is
   `claude mcp add --transport http magnific https://mcp.magnific.com`.
 
 linked_issues: []

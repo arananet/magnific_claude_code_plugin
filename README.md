@@ -39,30 +39,83 @@ resolution.
 
 ## What you get
 
+Registering the MCP server is one line. The plugin is the tooling around it.
+
+### Spend guard (PreToolUse hook)
+
+Magnific generations cost credits, and an agent in a loop or a batch pointed at
+the wrong folder can burn a balance in seconds. Before any paid Magnific call the
+guard checks the day's paid-call count and asks for confirmation once the budget
+is used. Read-only tools (`creations_search`, `tools_show`) are never guarded. A
+Magnific tool the plugin doesn't recognize is treated as **paid** — fail closed,
+so a newly added generation tool is guarded on day one.
+
+It counts paid *tool calls*, not credits: no local hook can see your real
+balance. It's a rate limit against runaway spend, not accounting.
+
+### Asset ledger (PostToolUse hook)
+
+Magnific returns hosted URLs that expire. Every result is downloaded to
+`.magnific/assets/` and recorded in `.magnific/ledger.jsonl` along with the tool,
+prompt, and settings that produced it — so your best result isn't a dead link in
+a scrolled-away transcript, and you can answer "what made this?" months later.
+
+Both hooks exit 0 on any error. A bookkeeping failure never breaks your tool call.
+
+### Commands
+
 | Command | Does |
 | --- | --- |
 | `/magnific:setup` | Connect the server and explain the OAuth sign-in |
 | `/magnific:upscale` | Upscale an asset, faithful or generative, sized to the deliverable |
 | `/magnific:generate` | Generate an image or video, with reference-based consistency |
-| `/magnific:creations` | Search your history and reuse a past asset |
+| `/magnific:batch` | Run an operation over a folder — confirms the file list, runs one first, then goes sequentially |
+| `/magnific:brief` | Turn a creative brief into a consistent asset set |
+| `/magnific:library` | Search the local ledger, or trace what produced a file |
+| `/magnific:budget` | Spend against budget; change the limit |
+| `/magnific:creations` | Search your Magnific account history |
 
-Plus the `magnific-creator-workflows` skill, which fires on natural requests
-("make this print-ready", "same character, different scene", "the one I made last
-week") and picks the right Magnific tool, guards credit spend, and keeps a set of
-assets visually consistent.
+### Subagent
 
-The underlying MCP server exposes tools for upscaling, image and video generation,
-background removal, custom references, creation search, text-to-speech, and 3D
-generation. The skill reads the server's live tool list rather than hardcoding
-names, so it keeps working if Magnific adds or renames tools.
+`magnific-art-director` runs multi-asset productions: checks budget and existing
+work first, anchors the set to one custom reference instead of re-prompting (which
+drifts), generates one asset at a time, and reviews each before spending on the next.
+
+### Skill
+
+`magnific-creator-workflows` fires on natural requests — "make this print-ready",
+"same character, different scene", "the one I made last week" — and picks the tool
+from the server's **live** tool list rather than a hardcoded set, so it keeps
+working when Magnific adds or renames tools. It also encodes the judgment calls:
+faithful vs. generative upscaling, reference-based consistency, checking the
+library before regenerating.
+
+### Configuration
+
+`.magnific/config.json`, all optional:
+
+```json
+{
+  "daily_paid_call_budget": 25,
+  "confirm_every_paid_call": false,
+  "auto_download": true,
+  "asset_dir": ".magnific/assets",
+  "max_download_mb": 50
+}
+```
 
 ## Develop
 
 ```bash
-bash setup.sh          # install git hooks
-bash tests/plugin.sh   # plugin contract tests (no network, no account needed)
+bash setup.sh                          # install git hooks
+bash tests/plugin.sh                   # contract tests — no network, no account needed
+python3 tests/magnific_hooks_test.py   # hook logic unit tests
 bash scripts/openspec check
 ```
+
+Hook scripts are standard-library Python 3 under `scripts/magnific/`. Hook config
+lives in `plugin-hooks/` because the repo root's `hooks/` already holds OpenSpec's
+git hooks.
 
 ---
 

@@ -73,15 +73,34 @@ of thumbnails, a character in several scenes), build a reference first with
 `custom_references_create` and reuse it, instead of re-prompting from scratch each
 time and hoping. Prompt-only consistency drifts; a reference is the mechanism.
 
+## The plugin's local tooling
+
+This plugin adds machinery around the MCP server. Use it — it is why reaching for
+Magnific here is different from calling the API.
+
+- **Every result is captured.** A PostToolUse hook downloads returned assets to
+  `.magnific/assets/` and records the tool, prompt, and settings in
+  `.magnific/ledger.jsonl`. Hosted URLs expire; the local copy does not. Tell the
+  user the local path, not just the link.
+- **Spend is guarded.** A PreToolUse hook asks for confirmation once the day's
+  paid-call budget is used. If it asks, stop and surface it — never work around it.
+- **The ledger is searchable offline**:
+  `python3 "${CLAUDE_PLUGIN_ROOT}/scripts/magnific/report.py" library <terms>`,
+  `... provenance <file>` for what produced a given file, and `... budget` for spend.
+  Check the library before generating: the asset may already exist.
+- **Multi-asset work goes to the `magnific-art-director` subagent**, which plans the
+  set, anchors it to one reference, and reviews each result before spending on the next.
+
+The guard counts paid *tool calls*, not credits — it cannot see the real balance.
+Say that plainly if the user asks; don't imply it tracks their account.
+
 ## Working with the results
 
-- Magnific returns hosted asset URLs. Give the user the link. Download into the repo
-  only when they asked for a file on disk, and put it where they said.
-- Generated media is generally large — do not commit it to a git repository unless
-  the user explicitly wants that.
-- Keep a short trail of what produced what (prompt, mode, reference) so the creator
-  can reproduce a result they liked. `creations_search` is the long-term memory here;
-  prefer finding a past asset over regenerating one.
+- Give the user both the hosted URL and the local path the capture hook saved.
+- Generated media is large — `.magnific/assets/` is gitignored by default. Do not
+  commit assets unless the user explicitly asks.
+- Prefer finding a past asset over regenerating one: the local ledger first, then
+  `creations_search` for work made before this plugin or in another client.
 
 ## Don't
 
