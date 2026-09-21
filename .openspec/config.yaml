@@ -12,12 +12,12 @@
 # ─────────────────────────────────────────────────────────────────────────────
 
 project:
-  name: "{{PROJECT_NAME}}"
-  owner: "{{GITHUB_OWNER}}"
-  team: "{{TEAM_NAME}}"
-  domain: "{{PROJECT_DOMAIN}}"
-  description: "{{PROJECT_DESCRIPTION}}"
-  tech_stack: "{{TECH_STACK}}"   # comma-separated, e.g. "python, fastapi, docker"
+  name: "magnific_claude_code_plugin"
+  owner: "arananet"
+  team: "@arananet"
+  domain: "creative-tooling"
+  description: "Claude Code plugin that connects the Magnific remote MCP server for AI upscaling, image/video generation, and creation history"
+  tech_stack: "bash, json, markdown"   # comma-separated, e.g. "python, fastapi, docker"
 
 spec:
   required_fields:
@@ -37,7 +37,7 @@ spec:
 
 testing:
   require_tests: true
-  test_command: "{{TEST_COMMAND}}"
+  test_command: "bash tests/plugin.sh"
   coverage_threshold: null
   fail_on_missing_tests: true
 

@@ -1,54 +1,131 @@
-# {{PROJECT_NAME}}
+# magnific_claude_code_plugin
 
-{{BADGES}}
+![Claude Code](https://img.shields.io/badge/Claude%20Code-plugin-8A4FFF) ![MCP](https://img.shields.io/badge/MCP-streamable%20HTTP-informational) ![OpenSpec](https://img.shields.io/badge/OpenSpec-enforced-blueviolet) ![License](https://img.shields.io/badge/License-MIT-green)
 
-> {{PROJECT_DESCRIPTION}}
+> A Claude Code plugin that brings Magnific's creative AI — upscaling, image and
+> video generation, character/style references, and your creation history — into
+> a normal Claude Code session.
+
+**Unofficial.** This is a community-built integration by a fan of the platform,
+not affiliated with or endorsed by Magnific. It talks to Magnific's public MCP
+endpoint using your own account and credits.
 
 ---
 
-## Start With This Template
+## Install
 
-For a new project, use **Use this template** on GitHub, then clone your new
-repository. Install Bash, Git, and Ruby >= 2.6; no AI runtime is required.
-
-1. Follow [project onboarding](docs/ONBOARDING.md) to confirm project values,
-   configure the test command, and remove template-only specs in your new copy.
-   Work manually or with your coding agent; do not run cleanup on this template.
-2. Run `bash setup.sh`, then `bash scripts/openspec scaffold "first-change"`.
-   Agree on scope, acceptance criteria, and tests before setting `status: review`.
-3. Implement one small change with its tests. Run `bash scripts/openspec check`,
-   `bash scripts/openspec verify first-change`, and `bash scripts/openspec status first-change`.
-4. Submit the spec, implementation, tests, and relevant docs together for human
-   review. A passing command is evidence, not approval to merge.
-
-That is the core loop. [Optional capabilities](docs/ADOPTION.md#compose-by-need)
-can follow when needed; this path does not disable shipped security workflows.
-Maintaining the template itself? Use the [local verification guide](docs/ADOPTION.md#template-verification)
-and preserve all placeholders. Replace this section with project-specific guidance
-after onboarding.
-
-## Quick start
+As a plugin (gets the commands and the skill too):
 
 ```bash
-# 1. Clone and install
-git clone https://github.com/{{GITHUB_OWNER}}/{{PROJECT_NAME}}.git
-cd {{PROJECT_NAME}}
-bash setup.sh
-
-# 2. Run
-{{TEST_COMMAND}}
+/plugin install arananet/magnific_claude_code_plugin
 ```
 
-<!--
-Replace this section with how to actually install and run YOUR project:
-language version, dependencies, env vars, run command, etc.
--->
+Or register just the MCP server:
+
+```bash
+claude mcp add --transport http magnific https://mcp.magnific.com
+```
+
+## Authentication
+
+**OAuth, not an API key.** The first Magnific tool call opens a Magnific sign-in
+in your browser; approve it and Claude Code keeps the session. There is nothing
+to paste and no key to store — do not add credentials to `.mcp.json`.
+(Magnific's REST API does use API keys; that is a separate surface this plugin
+does not touch.)
+
+Generations spend credits from your Magnific balance, scaled by model and
+resolution.
+
+## What you get
+
+Registering the MCP server is one line. The plugin is the tooling around it.
+
+### Spend guard (PreToolUse hook)
+
+Magnific generations cost credits, and an agent in a loop or a batch pointed at
+the wrong folder can burn a balance in seconds. Before any paid Magnific call the
+guard checks the day's paid-call count and asks for confirmation once the budget
+is used. Read-only tools (`creations_search`, `tools_show`) are never guarded. A
+Magnific tool the plugin doesn't recognize is treated as **paid** — fail closed,
+so a newly added generation tool is guarded on day one.
+
+It counts paid *tool calls*, not credits: no local hook can see your real
+balance. It's a rate limit against runaway spend, not accounting.
+
+### Asset ledger (PostToolUse hook)
+
+Magnific returns hosted URLs that expire. Every result is downloaded to
+`.magnific/assets/` and recorded in `.magnific/ledger.jsonl` along with the tool,
+prompt, and settings that produced it — so your best result isn't a dead link in
+a scrolled-away transcript, and you can answer "what made this?" months later.
+
+Both hooks exit 0 on any error. A bookkeeping failure never breaks your tool call.
+
+### Commands
+
+| Command | Does |
+| --- | --- |
+| `/magnific:setup` | Connect the server and explain the OAuth sign-in |
+| `/magnific:upscale` | Upscale an asset, faithful or generative, sized to the deliverable |
+| `/magnific:generate` | Generate an image or video, with reference-based consistency |
+| `/magnific:batch` | Run an operation over a folder — confirms the file list, runs one first, then goes sequentially |
+| `/magnific:brief` | Turn a creative brief into a consistent asset set |
+| `/magnific:library` | Search the local ledger, or trace what produced a file |
+| `/magnific:budget` | Spend against budget; change the limit |
+| `/magnific:creations` | Search your Magnific account history |
+
+### Subagent
+
+`magnific-art-director` runs multi-asset productions: checks budget and existing
+work first, anchors the set to one custom reference instead of re-prompting (which
+drifts), generates one asset at a time, and reviews each before spending on the next.
+
+### Skill
+
+`magnific-creator-workflows` fires on natural requests — "make this print-ready",
+"same character, different scene", "the one I made last week" — and picks the tool
+from the server's **live** tool list rather than a hardcoded set, so it keeps
+working when Magnific adds or renames tools. It also encodes the judgment calls:
+faithful vs. generative upscaling, reference-based consistency, checking the
+library before regenerating.
+
+### Configuration
+
+`.magnific/config.json`, all optional:
+
+```json
+{
+  "daily_paid_call_budget": 25,
+  "confirm_every_paid_call": false,
+  "auto_download": true,
+  "asset_dir": ".magnific/assets",
+  "max_download_mb": 50
+}
+```
+
+## Develop
+
+```bash
+bash setup.sh                          # install git hooks
+bash tests/plugin.sh                   # contract tests — no network, no account needed
+python3 tests/magnific_hooks_test.py   # hook logic unit tests
+bash scripts/openspec check
+```
+
+Hook scripts are standard-library Python 3 under `scripts/magnific/`. Hook config
+lives in `plugin-hooks/` because the repo root's `hooks/` already holds OpenSpec's
+git hooks.
 
 ---
 
 ## Usage
 
-<!-- TODO: Show the smallest useful example of your project in action. -->
+Once installed, just ask:
+
+- "Upscale `hero.png` for a print poster" → picks the faithful path, sizes to print
+- "Generate a thumbnail with this character" → builds or reuses a reference
+- "Find the product shot I made last week and cut out the background"
 
 ---
 

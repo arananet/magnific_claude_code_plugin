@@ -1,6 +1,6 @@
 # Support
 
-Thanks for using `{{PROJECT_NAME}}`. Here's where to go for help.
+Thanks for using `magnific_claude_code_plugin`. Here's where to go for help.
 
 ## Quick Triage
 

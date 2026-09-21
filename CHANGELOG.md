@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to `{{PROJECT_NAME}}` will be documented in this file.
+All notable changes to `magnific_claude_code_plugin` will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
@@ -20,6 +20,32 @@ Guidelines:
 -->
 
 ## [Unreleased]
+
+### Added
+
+- Magnific Claude Code plugin: `magnific` MCP server (streamable HTTP, browser
+  OAuth) plus eight slash commands — `setup`, `upscale`, `generate`, `batch`,
+  `brief`, `library`, `budget`, `creations` — and the
+  `magnific-creator-workflows` skill (spec: magnific-mcp-plugin).
+- PreToolUse spend guard: asks for confirmation once the daily paid-call budget
+  is reached, never guards read-only tools, and treats an unrecognized Magnific
+  tool as paid (spec: magnific-mcp-plugin).
+- PostToolUse asset capture: downloads returned assets to `.magnific/assets/`
+  and records tool, prompt, settings and paths in `.magnific/ledger.jsonl`,
+  searchable offline via `scripts/magnific/report.py` (spec: magnific-mcp-plugin).
+- `magnific-art-director` subagent for multi-asset productions
+  (spec: magnific-mcp-plugin).
+- Tests: `tests/plugin.sh` contract checks (manifest, transport and url, no
+  credentials in config, hook wiring, frontmatter) and
+  `tests/magnific_hooks_test.py` unit tests for tool classification, URL
+  extraction, guard decisions, ledger writes and malformed-input handling
+  (spec: magnific-mcp-plugin).
+
+### Changed
+
+- Onboarded the OpenSpec template into this project: filled config values,
+  removed template-internal specs and the template marker, and rewrote the
+  README around the plugin (spec: magnific-mcp-plugin).
 
 ### Added
 
@@ -71,4 +97,4 @@ Commits: `0a92a2d`, `035a861`, `5adbfbe`.
 
 - Initial repository commit (`d07225a`). No tagged release date is recorded in the local Git history.
 
-[Unreleased]: https://github.com/{{GITHUB_OWNER}}/{{PROJECT_NAME}}/commits/HEAD
+[Unreleased]: https://github.com/arananet/magnific_claude_code_plugin/commits/HEAD
