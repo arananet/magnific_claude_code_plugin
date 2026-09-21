@@ -25,12 +25,6 @@ This repo is its own marketplace, so add it first, then install from it:
 `/plugin install` takes `plugin@marketplace`, not a repo path, and reports
 `Marketplace ... not found`.
 
-To register only the MCP server, without the hooks, commands, agent or skill:
-
-```bash
-claude mcp add --transport http magnific https://mcp.magnific.com
-```
-
 ## Authentication
 
 **OAuth, not an API key.** The first Magnific tool call opens a Magnific sign-in

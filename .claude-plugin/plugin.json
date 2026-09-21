@@ -17,8 +17,5 @@
     "video-generation",
     "content-creation"
   ],
-  "hooks": "./plugin-hooks/hooks.json",
-  "commands": "./commands",
-  "agents": "./agents",
-  "skills": "./skills"
+  "hooks": "./plugin-hooks/hooks.json"
 }

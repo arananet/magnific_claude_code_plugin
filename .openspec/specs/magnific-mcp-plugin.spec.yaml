@@ -40,6 +40,7 @@ acceptance_criteria:
 
 test_plan:
   - "Unit test (tests/plugin.sh): every JSON file under .claude-plugin/ parses and plugin.json carries name, description, version, author."
+  - "Unit test (tests/plugin.sh): plugin.json declares no component field (commands, agents, skills) as a non-list value, since a directory string there fails installation."
   - "Unit test (tests/plugin.sh): marketplace.json exists, names the marketplace, lists the plugin under the same name as plugin.json, and its source path contains a plugin manifest — the check that catches an uninstallable repo."
   - "Unit test (tests/plugin.sh): README and the setup command document the two-step marketplace install rather than the `/plugin install <owner>/<repo>` form, which fails with 'Marketplace not found'."
   - "Unit test (tests/plugin.sh): .mcp.json defines the magnific server with type http and url https://mcp.magnific.com."
@@ -83,10 +84,11 @@ technical_notes: |
   commands/*.md, skills/<name>/SKILL.md, agents/*.md, and plugin-hooks/hooks.json.
   Hook config lives in plugin-hooks/ rather than hooks/ because the repo root's
   hooks/ already holds OpenSpec's git hooks; the manifest points at it explicitly.
+  commands/, agents/ and skills/ are left to auto-discovery: the manifest's
+  component fields take arrays, not directory paths, and a directory string
+  there fails installation.
   Hook scripts are standard-library Python 3 under scripts/magnific/ and write
   state to .magnific/ in the project being worked on (CLAUDE_PROJECT_DIR).
-  Registering only the server, without any of this, is
-  `claude mcp add --transport http magnific https://mcp.magnific.com`.
 
 linked_issues: []
 linked_prs: []
