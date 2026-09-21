@@ -89,8 +89,6 @@ technical_notes: |
   there fails installation.
   Hook scripts are standard-library Python 3 under scripts/magnific/ and write
   state to .magnific/ in the project being worked on (CLAUDE_PROJECT_DIR).
-  Registering only the server, without any of this, is
-  `claude mcp add --transport http magnific https://mcp.magnific.com`.
 
 linked_issues: []
 linked_prs: []

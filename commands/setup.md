@@ -9,25 +9,16 @@ Get the user connected to Magnific.
    `.mcp.json` and nothing needs adding.
 2. If it is not present, work out which case it is:
 
-   - **The plugin was never installed.** It installs from this repo as a
-     marketplace, in two steps:
+   The plugin installs from this repo as a marketplace, in two steps:
 
-     ```bash
-     /plugin marketplace add arananet/magnific_claude_code_plugin
-     /plugin install magnific@arananet
-     ```
+   ```bash
+   /plugin marketplace add arananet/magnific_claude_code_plugin
+   /plugin install magnific@arananet
+   ```
 
-     `/plugin install arananet/magnific_claude_code_plugin` fails with
-     `Marketplace ... not found` — `/plugin install` takes `plugin@marketplace`,
-     not a repo path.
-
-   - **They only want the server**, without the hooks, commands, agent or skill:
-
-     ```bash
-     claude mcp add --transport http magnific https://mcp.magnific.com
-     ```
-
-   Either way, restart Claude Code afterwards.
+   `/plugin install arananet/magnific_claude_code_plugin` fails with
+   `Marketplace ... not found` — `/plugin install` takes `plugin@marketplace`,
+   not a repo path. Restart Claude Code after installing.
 3. Explain the auth model in one or two lines: **Magnific's MCP endpoint uses
    browser OAuth, not an API key.** The first tool call opens a Magnific sign-in
    in the browser; approving it stores the session in the client. There is nothing
