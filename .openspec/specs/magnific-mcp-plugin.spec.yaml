@@ -25,7 +25,8 @@ description: |
   asset, generating a concept, and reusing past creations.
 
 acceptance_criteria:
-  - "Given a user runs /plugin install on this repository, when Claude Code loads the plugin, then a `magnific` MCP server is registered with transport `http` and url `https://mcp.magnific.com`."
+  - "Given the repository URL, when the user runs `/plugin marketplace add arananet/magnific_claude_code_plugin` followed by `/plugin install magnific@arananet`, then the plugin installs; the repo carries .claude-plugin/marketplace.json listing a plugin whose name matches plugin.json and whose source resolves to a directory containing .claude-plugin/plugin.json."
+  - "Given the plugin is installed, when Claude Code loads it, then a `magnific` MCP server is registered with transport `http` and url `https://mcp.magnific.com`."
   - "Given the plugin is installed, when the user first invokes a Magnific tool, then authentication happens through the browser OAuth flow and no API key or token is read from the repo or environment."
   - "Given the plugin is installed, when the user types a slash command, then /magnific:setup, :upscale, :generate, :creations, :library, :budget, :batch and :brief are available."
   - "Given a Magnific tool returns hosted asset URLs, when the PostToolUse hook runs, then each asset is downloaded under .magnific/assets/ and an entry recording tool, prompt, settings and paths is appended to .magnific/ledger.jsonl."
@@ -39,6 +40,8 @@ acceptance_criteria:
 
 test_plan:
   - "Unit test (tests/plugin.sh): every JSON file under .claude-plugin/ parses and plugin.json carries name, description, version, author."
+  - "Unit test (tests/plugin.sh): marketplace.json exists, names the marketplace, lists the plugin under the same name as plugin.json, and its source path contains a plugin manifest — the check that catches an uninstallable repo."
+  - "Unit test (tests/plugin.sh): README and the setup command document the two-step marketplace install rather than the `/plugin install <owner>/<repo>` form, which fails with 'Marketplace not found'."
   - "Unit test (tests/plugin.sh): .mcp.json defines the magnific server with type http and url https://mcp.magnific.com."
   - "Unit test (tests/plugin.sh): no API-key-shaped secret or token env var is referenced by the MCP config, guarding the OAuth-only contract."
   - "Unit test (tests/plugin.sh): each file in commands/, skills/ and agents/ opens with a YAML frontmatter block containing a description."
@@ -72,7 +75,11 @@ eval_plan:
   metrics: []
 
 technical_notes: |
-  Layout: .claude-plugin/plugin.json manifest, .mcp.json for the server,
+  The repo doubles as its own single-plugin marketplace: `/plugin install` takes
+  `plugin@marketplace`, not a repo path, so without .claude-plugin/marketplace.json
+  the repo cannot be installed at all.
+
+  Layout: .claude-plugin/plugin.json manifest, .claude-plugin/marketplace.json, .mcp.json for the server,
   commands/*.md, skills/<name>/SKILL.md, agents/*.md, and plugin-hooks/hooks.json.
   Hook config lives in plugin-hooks/ rather than hooks/ because the repo root's
   hooks/ already holds OpenSpec's git hooks; the manifest points at it explicitly.
