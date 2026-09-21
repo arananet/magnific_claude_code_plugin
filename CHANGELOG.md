@@ -23,6 +23,12 @@ Guidelines:
 
 ### Added
 
+- README section answering "why not just connect the MCP directly?", contrasting
+  the raw endpoint with the plugin on spend, persistence, consistency and
+  upscale intent — including when the plugin is not worth the overhead. Guarded
+  by a test that keeps the bare `claude mcp add` line out of the docs
+  (spec: magnific-mcp-plugin).
+
 - README update instructions: refreshing the marketplace alone does not pull a
   new version, and `/reload-plugins` reporting 2 hooks is the check that an
   update actually landed (spec: magnific-mcp-plugin).

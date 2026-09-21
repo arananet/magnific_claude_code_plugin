@@ -25,6 +25,7 @@ description: |
   asset, generating a concept, and reusing past creations.
 
 acceptance_criteria:
+  - "Given a reader asking why they should not simply register the MCP endpoint themselves, when they read the README, then a section answers it directly, contrasting raw MCP with the plugin on spend, persistence, consistency and upscale intent, and says plainly when the plugin is not worth it."
   - "Given the repository URL, when the user runs `/plugin marketplace add arananet/magnific_claude_code_plugin` followed by `/plugin install magnific@arananet`, then the plugin installs; the repo carries .claude-plugin/marketplace.json listing a plugin whose name matches plugin.json and whose source resolves to a directory containing .claude-plugin/plugin.json."
   - "Given the plugin is installed, when Claude Code loads it, then a `magnific` MCP server is registered with transport `http` and url `https://mcp.magnific.com`."
   - "Given the plugin is installed, when the user first invokes a Magnific tool, then authentication happens through the browser OAuth flow and no API key or token is read from the repo or environment."
@@ -47,6 +48,7 @@ test_plan:
   - "Unit test (tests/plugin.sh): every JSON file under .claude-plugin/ parses and plugin.json carries name, description, version, author."
   - "Unit test (tests/plugin.sh): plugin.json declares no component field (commands, agents, skills) as a non-list value, since a directory string there fails installation."
   - "Unit test (tests/plugin.sh): marketplace.json exists, names the marketplace, lists the plugin under the same name as plugin.json, and its source path contains a plugin manifest — the check that catches an uninstallable repo."
+  - "Unit test (tests/plugin.sh): no doc hands out the bare `claude mcp add` install, which would bypass the guard, ledger, commands and agent."
   - "Unit test (tests/plugin.sh): README and the setup command document the two-step marketplace install rather than the `/plugin install <owner>/<repo>` form, which fails with 'Marketplace not found'."
   - "Unit test (tests/plugin.sh): .mcp.json defines the magnific server with type http and url https://mcp.magnific.com."
   - "Unit test (tests/plugin.sh): no API-key-shaped secret or token env var is referenced by the MCP config, guarding the OAuth-only contract."

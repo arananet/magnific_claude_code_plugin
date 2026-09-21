@@ -63,6 +63,28 @@ does not touch.)
 Generations spend credits from your Magnific balance, scaled by model and
 resolution.
 
+## Why not just connect the MCP directly?
+
+You can — registering Magnific's endpoint by hand is one command, and it works.
+That gives you Magnific's tools. This plugin gives you an opinionated way to
+run them. The difference shows up in four places, none of which the MCP server
+can solve on its own — they're client-side concerns:
+
+| Raw MCP | With this plugin |
+| --- | --- |
+| Every call spends credits at the model's discretion | A budget the agent can't quietly exceed; it asks once you hit the limit |
+| Results live in the transcript, behind URLs that expire | Every result recorded locally with the prompt that made it; direct media URLs downloaded |
+| "Same character" re-prompted per asset, drifting each time | A subagent that anchors the set to one reference before generating |
+| You decide upscale settings per call | The faithful/generative distinction made explicit, sized to the deliverable |
+
+The honest version: if you generate the occasional one-off image, the bare MCP
+server is enough and this plugin is overhead. It earns its place when you're
+producing sets, spending real credits, and expect to find a result again next
+month.
+
+Nothing here replaces or proxies Magnific's server — the plugin registers that
+same official endpoint and adds local tooling around it.
+
 ## What you get
 
 Registering the MCP server is one line. The plugin is the tooling around it.
