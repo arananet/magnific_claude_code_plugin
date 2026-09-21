@@ -25,6 +25,33 @@ This repo is its own marketplace, so add it first, then install from it:
 `/plugin install` takes `plugin@marketplace`, not a repo path, and reports
 `Marketplace ... not found`.
 
+## Update
+
+The hooks, commands, agent and skill ship *inside* the plugin, so a fix only
+reaches you after you pull the new version — refreshing the marketplace alone is
+not enough.
+
+```text
+/plugin marketplace update arananet
+/plugin uninstall magnific@arananet
+/plugin install magnific@arananet
+```
+
+Then restart Claude Code. You can do the same from the `/plugin` menu (Manage →
+magnific) if you prefer clicking.
+
+Verify the update landed:
+
+```text
+/reload-plugins
+```
+
+It must report **2 hooks** for this plugin. `0 hooks` means the hook config
+didn't load and nothing will be captured or guarded — run `/magnific:doctor`.
+
+Your `.magnific/` directory (ledger, assets, config) belongs to your working
+folder, not to the plugin, so updating never touches it.
+
 ## Authentication
 
 **OAuth, not an API key.** The first Magnific tool call opens a Magnific sign-in

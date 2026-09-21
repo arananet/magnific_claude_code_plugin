@@ -11,8 +11,15 @@ Work out what is actually wired up. Report findings plainly; fix nothing without
 2. **Are the hooks loaded?** `/plugin` or `/reload-plugins` reports a hook count.
    **0 hooks means nothing is being captured or guarded** — the MCP server still
    works, but results are not saved and spend is not limited. If it reports 0,
-   the plugin needs reinstalling (`/plugin marketplace update arananet`, then
-   reinstall) since the hook config ships with the plugin.
+   the plugin needs updating — the hook config ships inside it:
+
+   ```text
+   /plugin marketplace update arananet
+   /plugin uninstall magnific@arananet
+   /plugin install magnific@arananet
+   ```
+
+   Then restart Claude Code and check `/reload-plugins` again.
 
 3. **Did the hooks actually fire?** Turn on logging by writing
    `{"debug": true}` into `.magnific/config.json` (preserve existing keys), run

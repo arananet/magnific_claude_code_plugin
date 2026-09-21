@@ -23,6 +23,10 @@ Guidelines:
 
 ### Added
 
+- README update instructions: refreshing the marketplace alone does not pull a
+  new version, and `/reload-plugins` reporting 2 hooks is the check that an
+  update actually landed (spec: magnific-mcp-plugin).
+
 - `/magnific:doctor` for diagnosing hooks that do not fire, an empty ledger, or
   missing downloads, plus a `debug` config flag that logs every hook invocation
   and the tool name it saw to `.magnific/hook-debug.log`
