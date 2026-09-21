@@ -196,7 +196,7 @@ scripts/
 
 .claude/
 ├── commands/                # Slash commands (openspec-scaffold etc.)
-├── hooks/
+├── .githooks/
 └── settings.json
 
 docs/

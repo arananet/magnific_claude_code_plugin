@@ -38,15 +38,32 @@ DEFAULTS = {
     "auto_download": True,
     # Skip downloads above this size (MB). Video gets large fast.
     "max_download_mb": 50,
+    # Log every hook invocation to .magnific/hook-debug.log, for working out
+    # why a hook is or is not firing.
+    "debug": False,
 }
+
+
+# Set from the hook payload's cwd when there is one. The working directory need
+# not be a git repository — a plain folder is the normal case for creative work.
+_ROOT_OVERRIDE = None
+
+
+def set_project_root(path) -> None:
+    """Point state at the directory the tool call actually came from."""
+    global _ROOT_OVERRIDE
+    if path and Path(path).is_dir():
+        _ROOT_OVERRIDE = Path(path)
 
 
 def project_root() -> Path:
     """The directory the plugin stores state in.
 
-    Claude Code sets CLAUDE_PROJECT_DIR for hooks; fall back to cwd so the
-    scripts stay runnable by hand and in tests.
+    Order: the hook payload's cwd, then CLAUDE_PROJECT_DIR, then the process
+    cwd. No git repository is required anywhere.
     """
+    if _ROOT_OVERRIDE is not None:
+        return _ROOT_OVERRIDE
     return Path(os.environ.get("CLAUDE_PROJECT_DIR") or os.getcwd())
 
 
@@ -153,21 +170,64 @@ ASSET_EXT = (
 )
 
 
+# A result often comes back as a link to its page on Magnific rather than to
+# the file itself (https://www.magnific.com/app/creation/<id>). That page cannot
+# be downloaded as an image, but it is the durable handle for the creation, so
+# it is worth recording even when no direct media URL is present.
+CREATION_RE = re.compile(
+    r"https?://[^\s\"'<>)\]]*magnific\.com/[^\s\"'<>)\]]*/(?:creation|creations|asset)s?/[^\s\"'<>)\]]+",
+    re.IGNORECASE,
+)
+
+
+def _urls_in(blob) -> list:
+    text = blob if isinstance(blob, str) else json.dumps(blob, ensure_ascii=False)
+    return [u.rstrip(".,;") for u in URL_RE.findall(text)]
+
+
 def extract_asset_urls(blob) -> list:
-    """Asset URLs in an arbitrary tool response.
+    """Directly downloadable media URLs in an arbitrary tool response.
 
     Walks whatever structure came back rather than assuming a schema, because
     the response shape is Magnific's to change.
     """
-    text = blob if isinstance(blob, str) else json.dumps(blob, ensure_ascii=False)
     seen, urls = set(), []
-    for url in URL_RE.findall(text):
-        url = url.rstrip(".,;")
-        path = url.split("?", 1)[0].lower()
-        if not path.endswith(ASSET_EXT):
+    for url in _urls_in(blob):
+        if not url.split("?", 1)[0].lower().endswith(ASSET_EXT):
             continue
         if url in seen:
             continue
         seen.add(url)
         urls.append(url)
     return urls
+
+
+def extract_creation_urls(blob) -> list:
+    """Links to a creation's page on Magnific — not downloadable, still worth
+    keeping, since they outlive the transcript."""
+    text = blob if isinstance(blob, str) else json.dumps(blob, ensure_ascii=False)
+    seen, urls = set(), []
+    for url in CREATION_RE.findall(text):
+        url = url.rstrip(".,;")
+        if url in seen:
+            continue
+        seen.add(url)
+        urls.append(url)
+    return urls
+
+
+def debug_log(message: str) -> None:
+    """Append a line to .magnific/hook-debug.log when debug is on.
+
+    Exists because a hook that silently does not fire — wrong matcher, wrong
+    tool name — is otherwise invisible. Never raises.
+    """
+    try:
+        if not config().get("debug"):
+            return
+        path = state_dir() / "hook-debug.log"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with path.open("a", encoding="utf-8") as fh:
+            fh.write(f"{utc_now()} {message}\n")
+    except OSError:
+        pass

@@ -29,7 +29,7 @@ authorizes it (see §2):
 - `SECURITY.md`                    — security disclosure policy
 - `.openspec/config.yaml`          — project + CI policy
 - `setup.sh`                       — repo bootstrap
-- `hooks/**`                       — git hooks
+- `.githooks/**`                   — git hooks
 - `.claude/hooks/**`               — Claude Code harness hooks
 
 If your fix plan requires touching one of these, **stop**. Post an issue

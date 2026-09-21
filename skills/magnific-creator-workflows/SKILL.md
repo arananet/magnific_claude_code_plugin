@@ -78,10 +78,12 @@ time and hoping. Prompt-only consistency drifts; a reference is the mechanism.
 This plugin adds machinery around the MCP server. Use it — it is why reaching for
 Magnific here is different from calling the API.
 
-- **Every result is captured.** A PostToolUse hook downloads returned assets to
-  `.magnific/assets/` and records the tool, prompt, and settings in
-  `.magnific/ledger.jsonl`. Hosted URLs expire; the local copy does not. Tell the
-  user the local path, not just the link.
+- **Every result is captured.** A PostToolUse hook records the tool, prompt and
+  settings in `.magnific/ledger.jsonl`, and downloads the asset to
+  `.magnific/assets/` when Magnific returns a direct media URL. When it returns a
+  link to the creation's page instead, there is nothing to download — say so
+  rather than implying a file was saved, and offer to fetch it if the user wants
+  a local copy. Give the local path whenever there is one.
 - **Spend is guarded.** A PreToolUse hook asks for confirmation once the day's
   paid-call budget is used. If it asks, stop and surface it — never work around it.
 - **The ledger is searchable offline**:
@@ -96,7 +98,10 @@ Say that plainly if the user asks; don't imply it tracks their account.
 
 ## Working with the results
 
-- Give the user both the hosted URL and the local path the capture hook saved.
+- Give the user the hosted link, and the local path when the hook saved one.
+- If the user expected a local file and none appeared, do not guess: run
+  `/magnific:doctor`. A session reporting "0 hooks" means nothing is being
+  captured at all.
 - Generated media is large — `.magnific/assets/` is gitignored by default. Do not
   commit assets unless the user explicitly asks.
 - Prefer finding a past asset over regenerating one: the local ledger first, then

@@ -41,6 +41,8 @@ def decide(tool_name: str, cfg: dict, entries: list):
 def main() -> None:
     data = lib.read_hook_input()
     tool_name = data.get("tool_name", "")
+    lib.set_project_root(data.get("cwd"))
+    lib.debug_log("guard invoked for tool=" + repr(tool_name))
     try:
         decision, reason = decide(tool_name, lib.config(), lib.read_ledger())
     except Exception:  # never break the user's tool call over bookkeeping

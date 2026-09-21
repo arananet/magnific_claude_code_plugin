@@ -40,6 +40,7 @@ def matches(entry: dict, query: str) -> bool:
         entry.get("tool", ""),
         " ".join(entry.get("files", [])),
         " ".join(entry.get("urls", [])),
+        " ".join(entry.get("creations", [])),
         " ".join(f"{k}={v}" for k, v in (entry.get("input") or {}).items()),
     ]).lower()
     return all(term in hay for term in query.lower().split())
@@ -59,6 +60,8 @@ def cmd_library(query: str) -> int:
             print(f"    file:   {f}")
         for u in e.get("urls", [])[:3]:
             print(f"    url:    {u}")
+        for c in e.get("creations", [])[:3]:
+            print(f"    page:   {c}")
     if len(hits) > 40:
         print(f"\n... and {len(hits) - 40} more")
     return 0
@@ -73,6 +76,8 @@ def cmd_provenance(needle: str) -> int:
                 print(f"{k + ':':<7}{v}")
             for u in e.get("urls", []):
                 print(f"url:   {u}")
+            for c in e.get("creations", []):
+                print(f"page:  {c}")
             return 0
     print(f"No ledger entry records {needle}.")
     return 1

@@ -54,10 +54,19 @@ balance. It's a rate limit against runaway spend, not accounting.
 
 ### Asset ledger (PostToolUse hook)
 
-Magnific returns hosted URLs that expire. Every result is downloaded to
-`.magnific/assets/` and recorded in `.magnific/ledger.jsonl` along with the tool,
-prompt, and settings that produced it — so your best result isn't a dead link in
-a scrolled-away transcript, and you can answer "what made this?" months later.
+Every result is recorded in `.magnific/ledger.jsonl` along with the tool, prompt,
+and settings that produced it, in whichever directory you're working in — a plain
+folder is fine, no git repo needed. So you can answer "what made this?" months
+later, instead of hunting through a scrolled-away transcript.
+
+Whether a **file** lands on disk depends on what Magnific returns:
+
+- a **direct media URL** (ending in `.png`, `.mp4`, …) is downloaded to
+  `.magnific/assets/`
+- a link to the creation's **page** (`magnific.com/app/creation/<id>`) is recorded
+  but can't be fetched as an image — the ledger keeps the link and says so
+
+If nothing is being captured at all, run `/magnific:doctor`.
 
 Both hooks exit 0 on any error. A bookkeeping failure never breaks your tool call.
 
@@ -72,6 +81,7 @@ Both hooks exit 0 on any error. A bookkeeping failure never breaks your tool cal
 | `/magnific:brief` | Turn a creative brief into a consistent asset set |
 | `/magnific:library` | Search the local ledger, or trace what produced a file |
 | `/magnific:budget` | Spend against budget; change the limit |
+| `/magnific:doctor` | Diagnose hooks not firing, an empty ledger, or missing downloads |
 | `/magnific:creations` | Search your Magnific account history |
 
 ### Subagent
@@ -99,22 +109,27 @@ library before regenerating.
   "confirm_every_paid_call": false,
   "auto_download": true,
   "asset_dir": ".magnific/assets",
-  "max_download_mb": 50
+  "max_download_mb": 50,
+  "debug": false
 }
 ```
+
+`debug: true` logs every hook invocation and the tool name it saw to
+`.magnific/hook-debug.log` — the fastest way to tell "the hook never ran" from
+"the hook ran and found nothing".
 
 ## Develop
 
 ```bash
-bash setup.sh                          # install git hooks
-bash tests/plugin.sh                   # contract tests — no network, no account needed
-python3 tests/magnific_hooks_test.py   # hook logic unit tests
+bash setup.sh           # install git hooks (sourced from .githooks/)
+make test-plugin        # plugin contract + hook unit tests; no network or account
+make test-template      # OpenSpec machinery
 bash scripts/openspec check
 ```
 
-Hook scripts are standard-library Python 3 under `scripts/magnific/`. Hook config
-lives in `plugin-hooks/` because the repo root's `hooks/` already holds OpenSpec's
-git hooks.
+Plugin hook config lives at the conventional `hooks/hooks.json`; OpenSpec's git
+hooks moved to `.githooks/` to free that path. Hook scripts are standard-library
+Python 3 under `scripts/magnific/`.
 
 ---
 

@@ -16,6 +16,5 @@
     "image-generation",
     "video-generation",
     "content-creation"
-  ],
-  "hooks": "./plugin-hooks/hooks.json"
+  ]
 }

@@ -44,6 +44,14 @@ class ToolClassification(unittest.TestCase):
         # Fail closed: a tool Magnific adds tomorrow gets guarded today.
         self.assertTrue(lib.is_paid_tool("mcp__magnific__some_future_thing"))
 
+    def test_namespaced_plugin_tool_names_are_recognized(self):
+        # A plugin-provided server is namespaced; the session shows it as
+        # plugin:magnific:magnific, so the bare mcp__magnific__ form is not
+        # what arrives.
+        name = "mcp__plugin:magnific:magnific__images_generate"
+        self.assertTrue(lib.is_magnific_tool(name))
+        self.assertTrue(lib.is_paid_tool(name))
+
     def test_non_magnific_tools_are_ignored(self):
         self.assertFalse(lib.is_magnific_tool("Bash"))
         self.assertFalse(lib.is_magnific_tool("mcp__github__get_me"))
@@ -68,6 +76,21 @@ class UrlExtraction(unittest.TestCase):
 
     def test_no_urls_is_empty_not_an_error(self):
         self.assertEqual(lib.extract_asset_urls({"ok": True}), [])
+
+
+class CreationLinks(unittest.TestCase):
+    """Results often come back as a link to the creation's page, not the file."""
+
+    PAGE = "https://www.magnific.com/app/creation/YMvSdInWeC"
+
+    def test_creation_page_is_captured(self):
+        self.assertEqual(lib.extract_creation_urls({"text": f"Done: {self.PAGE}"}), [self.PAGE])
+
+    def test_creation_page_is_not_mistaken_for_a_downloadable_asset(self):
+        self.assertEqual(lib.extract_asset_urls({"text": self.PAGE}), [])
+
+    def test_ordinary_magnific_links_are_not_creations(self):
+        self.assertEqual(lib.extract_creation_urls({"text": "https://www.magnific.com/docs"}), [])
 
 
 class GuardDecisions(unittest.TestCase):
@@ -146,6 +169,31 @@ class HookProcesses(unittest.TestCase):
         self.assertNotIn("nonsense", e["input"])          # only known fields kept
         self.assertEqual(e["urls"], ["https://x.invalid/never-resolves.png"])
         self.assertEqual(e["files"], [])                   # download failed, entry still recorded
+
+    def test_capture_records_a_page_link_when_there_is_no_file(self):
+        payload = {
+            "tool_name": "mcp__plugin:magnific:magnific__images_generate",
+            "tool_input": {"prompt": "ceramic cup"},
+            "tool_response": {"content": [{"text":
+                "Done. https://www.magnific.com/app/creation/YMvSdInWeC"}]},
+            "cwd": self.tmp,
+        }
+        out = run_hook(CAPTURE, payload, "/nonexistent-project-dir")
+        entry = json.loads((Path(self.tmp) / ".magnific" / "ledger.jsonl").read_text().strip())
+        self.assertEqual(entry["creations"], ["https://www.magnific.com/app/creation/YMvSdInWeC"])
+        self.assertEqual(entry["files"], [])
+        self.assertIn("page link", out["hookSpecificOutput"]["additionalContext"])
+
+    def test_payload_cwd_wins_so_a_plain_folder_works(self):
+        # The working directory need not be a git repo, and CLAUDE_PROJECT_DIR
+        # may point elsewhere; state belongs where the tool call happened.
+        payload = {
+            "tool_name": "mcp__plugin:magnific:magnific__images_generate",
+            "tool_response": "https://www.magnific.com/app/creation/ABC",
+            "cwd": self.tmp,
+        }
+        run_hook(CAPTURE, payload, "/nonexistent-project-dir")
+        self.assertTrue((Path(self.tmp) / ".magnific" / "ledger.jsonl").is_file())
 
     def test_capture_ignores_non_magnific_tools(self):
         run_hook(CAPTURE, {"tool_name": "Bash", "tool_response": "https://x.test/a.png"}, self.tmp)
