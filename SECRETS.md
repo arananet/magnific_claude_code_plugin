@@ -36,7 +36,7 @@ organization. Examples:
 
 | Layer | Mechanism |
 | --- | --- |
-| Pre-commit | `gitleaks` runs in `hooks/pre-commit` (when installed via `setup.sh`) |
+| Pre-commit | `gitleaks` runs in `.githooks/pre-commit` (when installed via `setup.sh`) |
 | PR | `.github/workflows/secret-scan.yml` blocks PRs containing detected secrets |
 | Repository | GitHub Push Protection enabled — see `docs/BRANCH_PROTECTION.md` |
 | Audit | `.github/workflows/scorecard.yml` reports on secret-scanning posture |

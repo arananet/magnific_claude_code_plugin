@@ -65,13 +65,19 @@ def summarize_input(tool_input) -> dict:
 def main() -> None:
     data = lib.read_hook_input()
     tool = data.get("tool_name", "")
+    lib.set_project_root(data.get("cwd"))
+    lib.debug_log("capture invoked for tool=" + repr(tool))
     if not lib.is_magnific_tool(tool):
         lib.emit({})
         return
 
     try:
         cfg = lib.config()
-        urls = lib.extract_asset_urls(data.get("tool_response", ""))
+        response = data.get("tool_response", "")
+        urls = lib.extract_asset_urls(response)
+        # A result is often returned as a link to its page on Magnific rather
+        # than to the file, so record those too instead of losing the creation.
+        creations = lib.extract_creation_urls(response)
         saved, notes = [], []
 
         if urls and cfg.get("auto_download"):
@@ -84,25 +90,33 @@ def main() -> None:
                 else:
                     notes.append(f"{url}: {status}")
 
+        if not urls and not creations:
+            lib.emit({})
+            return
+
         lib.append_ledger({
             "at": lib.utc_now(),
             "tool": tool,
             "paid": lib.is_paid_tool(tool),
             "input": summarize_input(data.get("tool_input")),
             "urls": urls,
+            "creations": creations,
             "files": saved,
             "session": data.get("session_id", ""),
         })
 
-        if not urls:
-            lib.emit({})
-            return
-
-        lines = [f"Magnific: recorded {len(urls)} asset(s) in .magnific/ledger.jsonl."]
+        lines = [f"Magnific: recorded {len(urls) + len(creations)} result(s) in "
+                 ".magnific/ledger.jsonl."]
         if saved:
             lines.append("Saved locally: " + ", ".join(saved))
         if notes:
             lines.append("Not saved: " + "; ".join(notes))
+        if creations and not saved:
+            lines.append(
+                "The result came back as a Magnific page link (" + creations[0] + "), "
+                "not a direct file, so there is nothing to download automatically. "
+                "If the user wants a local copy, ask Magnific for the asset URL or "
+                "download it from that page.")
         lib.emit({"hookSpecificOutput": {
             "hookEventName": "PostToolUse",
             "additionalContext": " ".join(lines),

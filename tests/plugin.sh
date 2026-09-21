@@ -11,7 +11,7 @@ fail() { printf 'FAIL: %s\n' "$*" >&2; failures=$((failures + 1)); }
 pass() { printf 'ok: %s\n' "$*"; }
 
 # --- every plugin JSON file parses -------------------------------------------
-for json in .claude-plugin/plugin.json .claude-plugin/marketplace.json .mcp.json plugin-hooks/hooks.json; do
+for json in .claude-plugin/plugin.json .claude-plugin/marketplace.json .mcp.json hooks/hooks.json; do
   [[ -f $json ]] || { fail "$json is missing"; continue; }
   if python3 -c "import json,sys; json.load(open(sys.argv[1]))" "$json" 2>/dev/null; then
     pass "$json parses"
@@ -144,26 +144,29 @@ done
 
 # --- hooks are wired to scripts that exist and behave -------------------------
 python3 - <<'PYHOOK' || failures=$((failures + 1))
-import json, sys
-m = json.load(open('.claude-plugin/plugin.json'))
-# hooks/ at the repo root belongs to OpenSpec's git hooks, so the manifest must
-# point the plugin somewhere else explicitly.
-if m.get('hooks') != './plugin-hooks/hooks.json':
-    print(f"FAIL: plugin.json hooks path is {m.get('hooks')!r}, expected './plugin-hooks/hooks.json'",
-          file=sys.stderr)
-    sys.exit(1)
-cfg = json.load(open('plugin-hooks/hooks.json'))['hooks']
+import json, re, sys
+# hooks/hooks.json is the auto-discovered location. A session reporting
+# "0 hooks" means none of this loaded, so the path matters more than it looks.
+cfg = json.load(open('hooks/hooks.json'))['hooks']
+# The MCP server is namespaced when it comes from a plugin — the session shows
+# it as plugin:magnific:magnific — so a matcher anchored on mcp__magnific__
+# never fires.
+namespaced = "mcp__plugin:magnific:magnific__images_generate"
 for event in ('PreToolUse', 'PostToolUse'):
     entries = cfg.get(event) or []
     if not entries:
         print(f"FAIL: hooks.json defines no {event} hook", file=sys.stderr)
         sys.exit(1)
     for entry in entries:
-        if 'magnific' not in entry.get('matcher', ''):
-            print(f"FAIL: {event} matcher {entry.get('matcher')!r} does not scope to magnific tools",
-                  file=sys.stderr)
+        matcher = entry.get('matcher', '')
+        if not re.search(matcher, namespaced):
+            print(f"FAIL: {event} matcher {matcher!r} does not match a namespaced "
+                  f"plugin tool name like {namespaced!r}", file=sys.stderr)
             sys.exit(1)
-print('ok: hooks.json wires PreToolUse and PostToolUse, scoped to magnific tools')
+        if re.search(matcher, "Bash") or re.search(matcher, "mcp__github__get_me"):
+            print(f"FAIL: {event} matcher {matcher!r} is too broad", file=sys.stderr)
+            sys.exit(1)
+print('ok: hooks.json wires both events, matching namespaced magnific tools only')
 PYHOOK
 
 for script in scripts/magnific/guard.py scripts/magnific/capture.py scripts/magnific/report.py; do
@@ -186,7 +189,7 @@ for hook in scripts/magnific/guard.py scripts/magnific/capture.py; do
 done
 
 # --- the advertised commands exist --------------------------------------------
-for cmd in setup upscale generate creations library budget batch brief; do
+for cmd in setup upscale generate creations library budget batch brief doctor; do
   [[ -f "commands/$cmd.md" ]] && pass "/magnific:$cmd present" || fail "commands/$cmd.md is missing"
 done
 

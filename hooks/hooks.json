@@ -2,7 +2,7 @@
   "hooks": {
     "PreToolUse": [
       {
-        "matcher": "mcp__magnific__.*",
+        "matcher": ".*[Mm]agnific.*",
         "hooks": [
           {
             "type": "command",
@@ -14,7 +14,7 @@
     ],
     "PostToolUse": [
       {
-        "matcher": "mcp__magnific__.*",
+        "matcher": ".*[Mm]agnific.*",
         "hooks": [
           {
             "type": "command",

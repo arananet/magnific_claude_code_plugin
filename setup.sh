@@ -3,7 +3,7 @@
 set -euo pipefail
 
 HOOKS_DIR=".git/hooks"
-SOURCE_DIR="hooks"
+SOURCE_DIR=".githooks"
 
 if ! command -v ruby >/dev/null 2>&1 || ! ruby -e 'exit(Gem::Version.new(RUBY_VERSION) >= Gem::Version.new("2.6") ? 0 : 1)'; then
   echo "Error: OpenSpec requires Ruby >= 2.6 (standard libraries only)."
@@ -16,7 +16,7 @@ if [ ! -d "$HOOKS_DIR" ]; then
 fi
 
 if [ ! -d "$SOURCE_DIR" ]; then
-  echo "Error: hooks/ directory not found. Run from the repo root."
+  echo "Error: .githooks/ directory not found. Run from the repo root."
   exit 1
 fi
 

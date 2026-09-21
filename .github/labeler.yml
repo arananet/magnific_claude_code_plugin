@@ -60,7 +60,7 @@ claude:
 hooks:
   - changed-files:
       - any-glob-to-any-file:
-          - 'hooks/**'
+          - '.githooks/**'
           - '.claude/hooks/**'
           - '.pre-commit-config.yaml'
 

@@ -29,7 +29,12 @@ acceptance_criteria:
   - "Given the plugin is installed, when Claude Code loads it, then a `magnific` MCP server is registered with transport `http` and url `https://mcp.magnific.com`."
   - "Given the plugin is installed, when the user first invokes a Magnific tool, then authentication happens through the browser OAuth flow and no API key or token is read from the repo or environment."
   - "Given the plugin is installed, when the user types a slash command, then /magnific:setup, :upscale, :generate, :creations, :library, :budget, :batch and :brief are available."
-  - "Given a Magnific tool returns hosted asset URLs, when the PostToolUse hook runs, then each asset is downloaded under .magnific/assets/ and an entry recording tool, prompt, settings and paths is appended to .magnific/ledger.jsonl."
+  - "Given a Magnific tool returns a direct media URL, when the PostToolUse hook runs, then the asset is downloaded under .magnific/assets/ and an entry recording tool, prompt, settings and paths is appended to .magnific/ledger.jsonl."
+  - "Given a Magnific tool returns a link to the creation's page rather than a file, when the PostToolUse hook runs, then the link is recorded in the ledger's creations field and the hook reports that there was nothing to download."
+  - "Given the MCP server is provided by the plugin and its tools are namespaced (mcp__plugin:magnific:magnific__*), when a tool runs, then the hook matchers still fire; matchers anchored on mcp__magnific__ do not and are rejected by the tests."
+  - "Given the working directory is a plain folder rather than a git repository, when a hook runs, then state is written under that directory, resolved from the hook payload's cwd before CLAUDE_PROJECT_DIR."
+  - "Given a fix has shipped, when the user follows the README's update section (marketplace update, uninstall, install, restart), then the new hooks, commands, agent and skill are loaded, `/reload-plugins` reports 2 hooks, and the working folder's .magnific/ state is untouched."
+  - "Given hooks appear not to run, when the user runs /magnific:doctor with debug enabled, then .magnific/hook-debug.log records each invocation and the tool name seen, distinguishing 'never fired' from 'fired and found nothing'."
   - "Given the configured daily paid-call budget has been reached, when another paid Magnific tool is about to run, then the PreToolUse hook returns permissionDecision 'ask' with the count and the budget; read-only tools are never guarded."
   - "Given a Magnific tool name the plugin does not recognize, when the guard classifies it, then it is treated as paid, so a newly added generation tool is guarded rather than spending silently."
   - "Given either hook receives malformed input or hits an error, when it runs, then it exits 0 with valid JSON and the user's tool call is unaffected."
@@ -63,6 +68,8 @@ qa_notes: |
   differ. Paid generations consume Magnific credits — use the smallest
   resolution when smoke-testing.
 
+  - "Template-maintenance contracts (tests/template.sh). This repo is a downstream fork, not the template; that suite asserted README sections and a badge catalog the fork replaced, and has been removed."
+
 out_of_scope:
   - "Wrapping the Magnific REST API or handling API keys; the MCP endpoint is OAuth-only."
   - "Reading the user's real Magnific credit balance. The guard rate-limits paid tool calls locally; it cannot see the account."
@@ -82,11 +89,11 @@ technical_notes: |
 
   Layout: .claude-plugin/plugin.json manifest, .claude-plugin/marketplace.json, .mcp.json for the server,
   commands/*.md, skills/<name>/SKILL.md, agents/*.md, and plugin-hooks/hooks.json.
-  Hook config lives in plugin-hooks/ rather than hooks/ because the repo root's
-  hooks/ already holds OpenSpec's git hooks; the manifest points at it explicitly.
   commands/, agents/ and skills/ are left to auto-discovery: the manifest's
   component fields take arrays, not directory paths, and a directory string
-  there fails installation.
+  there fails installation. Hook config sits at the conventional hooks/hooks.json
+  for the same reason; OpenSpec's git hooks moved to .githooks/ to free it, with
+  setup.sh updated to match.
   Hook scripts are standard-library Python 3 under scripts/magnific/ and write
   state to .magnific/ in the project being worked on (CLAUDE_PROJECT_DIR).
 

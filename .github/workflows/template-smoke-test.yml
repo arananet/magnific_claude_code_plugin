@@ -25,6 +25,7 @@ on:
     branches: [main, master]
     paths:
       - "setup.sh"
+      - ".githooks/**"
       - "hooks/**"
       - ".claude/hooks/**"
       - ".github/workflows/template-smoke-test.yml"

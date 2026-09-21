@@ -23,6 +23,15 @@ Guidelines:
 
 ### Added
 
+- README update instructions: refreshing the marketplace alone does not pull a
+  new version, and `/reload-plugins` reporting 2 hooks is the check that an
+  update actually landed (spec: magnific-mcp-plugin).
+
+- `/magnific:doctor` for diagnosing hooks that do not fire, an empty ledger, or
+  missing downloads, plus a `debug` config flag that logs every hook invocation
+  and the tool name it saw to `.magnific/hook-debug.log`
+  (spec: magnific-mcp-plugin).
+
 - Magnific Claude Code plugin: `magnific` MCP server (streamable HTTP, browser
   OAuth) plus eight slash commands — `setup`, `upscale`, `generate`, `batch`,
   `brief`, `library`, `budget`, `creations` — and the
@@ -49,6 +58,23 @@ Guidelines:
   guard (spec: magnific-mcp-plugin).
 
 ### Fixed
+
+- Hooks never ran: a session reported `0 hooks`, so nothing was captured or
+  guarded. Three causes, all fixed — hook config moved to the conventional
+  `hooks/hooks.json` (OpenSpec's git hooks moved to `.githooks/` to free the
+  path, `setup.sh` updated) and the manifest's `hooks` path field dropped; the
+  matchers, anchored on `mcp__magnific__`, never matched the namespaced
+  `mcp__plugin:magnific:magnific__*` names a plugin-provided server actually
+  uses; and hook state now resolves from the payload's `cwd`, so a plain
+  working folder needs no git repository (spec: magnific-mcp-plugin).
+- Results returned as a link to the creation's page rather than a media URL
+  were dropped entirely. They are now recorded in the ledger's `creations`
+  field, with the hook stating that there is nothing to download
+  (spec: magnific-mcp-plugin).
+- Removed `tests/template.sh`, which asserted template-maintenance contracts
+  (README sections, badge catalog) that this fork replaced; it had been failing
+  since the README was rewritten. `make test-plugin` now runs the plugin suites
+  and is included in `make verify-template` (spec: magnific-mcp-plugin).
 
 - The repo was not installable: `/plugin install arananet/magnific_claude_code_plugin`
   failed with `Marketplace "arananet/magnific_claude_code_plugin" not found`,
