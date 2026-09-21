@@ -142,6 +142,15 @@ for doc in README.md commands/setup.md; do
   fi
 done
 
+# The README deliberately does not hand out the bare `claude mcp add` line: it
+# is the path that skips the guard, the ledger, the commands and the agent.
+for doc in README.md commands/*.md; do
+  if grep -q 'claude mcp add' "$doc"; then
+    fail "$doc reintroduces the bare 'claude mcp add' install, bypassing the plugin"
+  fi
+done
+pass "docs do not hand out the bare MCP-add install"
+
 # --- hooks are wired to scripts that exist and behave -------------------------
 python3 - <<'PYHOOK' || failures=$((failures + 1))
 import json, re, sys
