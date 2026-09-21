@@ -120,11 +120,159 @@ git hooks.
 
 ## Usage
 
-Once installed, just ask:
+You don't call tools by name — describe the asset and the skill routes it. These
+are real phrasings, with what each one triggers.
 
-- "Upscale `hero.png` for a print poster" → picks the faithful path, sizes to print
-- "Generate a thumbnail with this character" → builds or reuses a reference
-- "Find the product shot I made last week and cut out the background"
+### Generate images
+
+```text
+Generate a hero image for a landing page: a ceramic coffee cup on a dark
+walnut table, morning window light from the left, 16:9
+```
+
+```text
+Make three thumbnail concepts for a video about AI upscaling — bold, high
+contrast, readable at 200px wide
+```
+
+Claude generates **one** first and shows it, rather than spending on three
+concepts you may hate. Say "the second direction, warmer" and it iterates.
+
+```text
+Take product.jpg and put it on a marble surface with soft studio lighting,
+keep the label exactly as it is
+```
+
+### Generate video
+
+```text
+Turn this still into a 5-second shot: slow push-in, subtle steam rising
+from the cup
+```
+
+```text
+Generate a 10-second B-roll clip of rain on a city window at night, moody,
+no people, 9:16 for a reel
+```
+
+Video is the most expensive thing here. Claude states the cost before running
+and won't generate variants unprompted. Ask for the aspect ratio you actually
+need — regenerating for a different crop costs full price.
+
+### Upscale and enhance
+
+```text
+Upscale hero.png for a 60x40cm print
+```
+
+Claude asks — or infers — whether this is *faithful* or *generative* work:
+
+```text
+Upscale this client's product photo. Stay true to the source, it's going
+next to the real product on the packaging
+```
+
+```text
+Upscale this concept sketch for a pitch deck — go wild with the detail,
+nothing here has to match reality
+```
+
+That distinction matters more than resolution. An upscaler invents plausible
+detail; on a real product that's a defect, on concept art it's the point.
+
+```text
+Enhance this 2013 phone photo of the storefront enough to use as a website
+header
+```
+
+### Keep a set consistent
+
+The thing prompts alone can't do:
+
+```text
+I need 8 images of the same character — a woman in a red raincoat — in
+different city locations. Keep her face and coat identical across all of them
+```
+
+This goes to the `magnific-art-director` subagent: it builds **one** custom
+reference first, then generates against it, instead of re-prompting eight times
+and getting eight different people.
+
+```text
+Build a style reference from these three images, then use it for every asset
+in the campaign
+```
+
+### Batch a folder
+
+```text
+/magnific:batch ./product-shots upscale all of these for the web store
+```
+
+Claude lists the files and the count, waits for your confirmation, runs **one**
+first so you can check the settings, then processes the rest sequentially. A
+wrong setting across 40 images is the failure mode this prevents.
+
+```text
+/magnific:batch ./cutouts/*.jpg remove the backgrounds
+```
+
+### Run a brief
+
+```text
+/magnific:brief We're launching a cold brew can in three flavors. I need a
+hero shot per flavor, a 9:16 story version of each, and one 15-second loop
+for the ad. Same can, same lighting, different colorways.
+```
+
+The art director reads it back, checks your budget against the asset count,
+anchors everything to one reference, and generates one at a time with a review
+between each.
+
+### Audio and 3D
+
+```text
+Generate a voiceover for this script, calm and warm, mid-pace
+```
+
+```text
+Generate a 3D model of this product shot so I can spin it in the promo
+```
+
+### Find and reuse what you already made
+
+```text
+/magnific:library red raincoat
+```
+
+```text
+What produced .magnific/assets/20260921-images_upscale-1.png?
+```
+
+Shows the exact tool, prompt and settings behind that file — months later, after
+the hosted URL has expired.
+
+```text
+Find the cup shot I made last week and generate a 9:16 version of it
+```
+
+Reusing costs nothing and keeps the look consistent. Claude checks the local
+ledger before generating something new.
+
+### Watch the spend
+
+```text
+/magnific:budget
+```
+
+```text
+/magnific:budget 60
+```
+
+Raises the daily paid-call limit. The guard asks for confirmation once you hit
+it — useful precisely when an agent is mid-batch and you've stopped watching.
+It counts paid **tool calls**, not credits; for your real balance, check your
+Magnific account.
 
 ---
 

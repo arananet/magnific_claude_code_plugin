@@ -41,6 +41,13 @@ Guidelines:
   extraction, guard decisions, ledger writes and malformed-input handling
   (spec: magnific-mcp-plugin).
 
+### Added
+
+- README usage examples covering image and video generation, faithful vs.
+  generative upscaling, reference-based consistency across a set, folder
+  batches, briefs, audio and 3D, library and provenance lookups, and the spend
+  guard (spec: magnific-mcp-plugin).
+
 ### Fixed
 
 - The repo was not installable: `/plugin install arananet/magnific_claude_code_plugin`
