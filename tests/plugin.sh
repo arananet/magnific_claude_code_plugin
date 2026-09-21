@@ -73,6 +73,26 @@ for md in "${md_files[@]}"; do
   fi
 done
 
+# The manifest schema takes arrays for these, not directory strings — a string
+# fails installation with "agents: Invalid input". They are also unnecessary:
+# commands/, agents/ and skills/ at the plugin root are auto-discovered.
+python3 - <<'PYSCHEMA' || failures=$((failures + 1))
+import json, sys
+from pathlib import Path
+m = json.load(open('.claude-plugin/plugin.json'))
+for field in ('commands', 'agents', 'skills'):
+    if field in m and not isinstance(m[field], list):
+        print(f"FAIL: plugin.json {field!r} is {type(m[field]).__name__}, not a list — "
+              "installation rejects a directory string here", file=sys.stderr)
+        sys.exit(1)
+for d in ('commands', 'agents', 'skills'):
+    if d not in m and not Path(d).is_dir():
+        print(f"FAIL: {d}/ is missing and not declared in the manifest, so nothing loads it",
+              file=sys.stderr)
+        sys.exit(1)
+print('ok: manifest component fields are schema-valid; auto-discovered dirs exist')
+PYSCHEMA
+
 # --- the repo is a usable marketplace -----------------------------------------
 # Without .claude-plugin/marketplace.json, `/plugin marketplace add <repo>` fails
 # with "Marketplace not found" and the plugin cannot be installed at all.

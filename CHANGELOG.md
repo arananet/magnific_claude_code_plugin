@@ -51,6 +51,12 @@ Guidelines:
   added tests that fail if the marketplace manifest or the documented install
   command regresses (spec: magnific-mcp-plugin).
 
+- Installation was rejected with `agents: Invalid input`: the manifest declared
+  `commands`, `agents` and `skills` as directory strings, but the schema takes
+  arrays there. Removed all three — those directories are auto-discovered at the
+  plugin root — and added a test that fails if a non-list value reappears
+  (spec: magnific-mcp-plugin).
+
 ### Changed
 
 - Onboarded the OpenSpec template into this project: filled config values,
