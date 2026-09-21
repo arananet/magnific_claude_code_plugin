@@ -14,13 +14,18 @@ endpoint using your own account and credits.
 
 ## Install
 
-As a plugin (gets the commands and the skill too):
+This repo is its own marketplace, so add it first, then install from it:
 
 ```bash
-/plugin install arananet/magnific_claude_code_plugin
+/plugin marketplace add arananet/magnific_claude_code_plugin
+/plugin install magnific@arananet
 ```
 
-Or register just the MCP server:
+`/plugin install arananet/magnific_claude_code_plugin` does **not** work —
+`/plugin install` takes `plugin@marketplace`, not a repo path, and reports
+`Marketplace ... not found`.
+
+To register only the MCP server, without the hooks, commands, agent or skill:
 
 ```bash
 claude mcp add --transport http magnific https://mcp.magnific.com

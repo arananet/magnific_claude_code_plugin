@@ -41,6 +41,16 @@ Guidelines:
   extraction, guard decisions, ledger writes and malformed-input handling
   (spec: magnific-mcp-plugin).
 
+### Fixed
+
+- The repo was not installable: `/plugin install arananet/magnific_claude_code_plugin`
+  failed with `Marketplace "arananet/magnific_claude_code_plugin" not found`,
+  because `/plugin install` takes `plugin@marketplace` and the repo carried no
+  marketplace manifest. Added `.claude-plugin/marketplace.json`, corrected the
+  install instructions in README and `/magnific:setup` to the two-step form, and
+  added tests that fail if the marketplace manifest or the documented install
+  command regresses (spec: magnific-mcp-plugin).
+
 ### Changed
 
 - Onboarded the OpenSpec template into this project: filled config values,

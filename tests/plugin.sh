@@ -11,7 +11,7 @@ fail() { printf 'FAIL: %s\n' "$*" >&2; failures=$((failures + 1)); }
 pass() { printf 'ok: %s\n' "$*"; }
 
 # --- every plugin JSON file parses -------------------------------------------
-for json in .claude-plugin/plugin.json .mcp.json plugin-hooks/hooks.json; do
+for json in .claude-plugin/plugin.json .claude-plugin/marketplace.json .mcp.json plugin-hooks/hooks.json; do
   [[ -f $json ]] || { fail "$json is missing"; continue; }
   if python3 -c "import json,sys; json.load(open(sys.argv[1]))" "$json" 2>/dev/null; then
     pass "$json parses"
@@ -70,6 +70,55 @@ for md in "${md_files[@]}"; do
     pass "$md has a description"
   else
     fail "$md frontmatter has no non-empty description"
+  fi
+done
+
+# --- the repo is a usable marketplace -----------------------------------------
+# Without .claude-plugin/marketplace.json, `/plugin marketplace add <repo>` fails
+# with "Marketplace not found" and the plugin cannot be installed at all.
+python3 - <<'PYMKT' || failures=$((failures + 1))
+import json, sys
+from pathlib import Path
+try:
+    mkt = json.load(open('.claude-plugin/marketplace.json'))
+except FileNotFoundError:
+    print("FAIL: .claude-plugin/marketplace.json is missing — the repo is not installable",
+          file=sys.stderr)
+    sys.exit(1)
+if not mkt.get('name'):
+    print("FAIL: marketplace.json has no name", file=sys.stderr)
+    sys.exit(1)
+plugins = mkt.get('plugins') or []
+if not plugins:
+    print("FAIL: marketplace.json lists no plugins", file=sys.stderr)
+    sys.exit(1)
+manifest_name = json.load(open('.claude-plugin/plugin.json'))['name']
+names = [p.get('name') for p in plugins]
+if manifest_name not in names:
+    print(f"FAIL: marketplace lists {names}, but plugin.json is named {manifest_name!r}",
+          file=sys.stderr)
+    sys.exit(1)
+for p in plugins:
+    src = p.get('source')
+    if not src:
+        print(f"FAIL: plugin {p.get('name')!r} has no source", file=sys.stderr)
+        sys.exit(1)
+    if isinstance(src, str) and (src.startswith('./') or src == '.'):
+        if not (Path(src) / '.claude-plugin' / 'plugin.json').is_file():
+            print(f"FAIL: source {src!r} has no .claude-plugin/plugin.json", file=sys.stderr)
+            sys.exit(1)
+print(f"ok: installable as {manifest_name}@{mkt['name']} "
+      f"(/plugin marketplace add, then /plugin install)")
+PYMKT
+
+# The wrong install form cost a real user a failed install; keep the right one
+# in the docs.
+for doc in README.md commands/setup.md; do
+  if grep -q 'plugin marketplace add arananet/magnific_claude_code_plugin' "$doc" \
+     && grep -q 'plugin install magnific@arananet' "$doc"; then
+    pass "$doc documents the two-step install"
+  else
+    fail "$doc does not document '/plugin marketplace add' + '/plugin install magnific@arananet'"
   fi
 done
 
